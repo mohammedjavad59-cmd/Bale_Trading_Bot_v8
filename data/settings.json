@@ -62,7 +62,7 @@
     "oanda": {
       "name": "OANDA",
       "env_key": "OANDA_API_TOKEN",
-      "enabled": true,
+      "enabled": false,
       "priority": 1
     },
     "twelvedata": {
