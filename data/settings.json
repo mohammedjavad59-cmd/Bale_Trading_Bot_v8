@@ -1,0 +1,92 @@
+{
+  "bot": {
+    "bale_enabled": true,
+    "allowed_chat_ids": [
+      "659735670"
+    ],
+    "admin_chat_ids": []
+  },
+  "strategies": {
+    "ny_orb": {
+      "enabled": true,
+      "scan_interval": 20,
+      "cooldown": 0,
+      "max_signals_per_day": null,
+      "one_signal_per_candle": true,
+      "symbol": "XAU/USD",
+      "timeframe": "M5"
+    },
+    "vwap_wick_rejection": {
+      "enabled": true,
+      "scan_interval": 20,
+      "cooldown": 0,
+      "max_signals_per_day": null,
+      "one_signal_per_candle": true,
+      "symbol": "XAU/USD",
+      "timeframe": "M1"
+    },
+    "sp2l": {
+      "enabled": true,
+      "symbol": "XAU/USD",
+      "timeframe": "M5",
+      "scan_interval": 20,
+      "cooldown": 0,
+      "max_signals_per_day": null,
+      "one_signal_per_candle": true,
+      "direction": "BOTH",
+      "min_spike_bars": 1,
+      "max_spike_bars": 3,
+      "min_spike_body_ratio": 0.65,
+      "min_spike_vs_neighbors": 1.5,
+      "gap_mode": "three_candle",
+      "min_gap_points": 0,
+      "max_bars_after_pattern": 20,
+      "tp1_r": 1.0,
+      "use_tp2": true,
+      "tp2_r": 2.0,
+      "second_entry_fraction": 0.5,
+      "use_second_entry_2x": true
+    },
+    "test": {
+      "enabled": true,
+      "symbol": "XAU/USD",
+      "timeframe": "M1",
+      "scan_interval": 10,
+      "cooldown": 0,
+      "max_signals_per_day": null,
+      "one_signal_per_candle": true
+    }
+  },
+  "providers": {
+    "oanda": {
+      "name": "OANDA",
+      "env_key": "OANDA_API_TOKEN",
+      "enabled": true,
+      "priority": 1
+    },
+    "twelvedata": {
+      "name": "Twelve Data",
+      "env_key": "TWELVEDATA_API_KEY",
+      "enabled": true,
+      "priority": 2
+    },
+    "alltick": {
+      "name": "AllTick",
+      "env_key": "ALLTICK_API_TOKEN",
+      "enabled": true,
+      "priority": 3
+    },
+    "tradermade": {
+      "name": "TraderMade",
+      "env_key": "TRADERMADE_API_KEY",
+      "enabled": true,
+      "priority": 4
+    },
+    "finnhub": {
+      "name": "Finnhub",
+      "env_key": "FINNHUB_API_KEY",
+      "enabled": true,
+      "priority": 5
+    }
+  }
+}

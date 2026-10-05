@@ -1,0 +1,33 @@
+{
+  "BALE_TOKEN": "",
+  "BALE_CHAT_ID": "659735670",
+  "AUTO_DISCOVER_CHAT_ID": false,
+  "TWELVEDATA_API_KEY": "",
+  "SYMBOL_ALIASES": {
+    "طلا": "XAU/USD",
+    "gold": "XAU/USD",
+    "xauusd": "XAU/USD",
+    "xauusd.x": "XAU/USD"
+  },
+  "POLL_SECONDS": 20,
+  "HISTORY_FILE": "data/signal_history.json",
+  "SETTINGS_FILE": "data/settings.json",
+  "PORT": 8787,
+  "VWAP_RR": 1.5,
+  "VWAP_BAND_POINTS": 100,
+  "VWAP_ENTRY_BUFFER_POINTS": 5,
+  "VWAP_MAX_SPREAD_POINTS": 80,
+  "XAUUSD_POINT": 0.01,
+  "BROKER_UTC_OFFSET": "-03:30",
+  "MARKET_DATA_CACHE_SECONDS": 5,
+  "OWNER_CHAT_ID": "659735670",
+  "ALLTICK_API_TOKEN": "",
+  "ALLTICK_KLINE_URL": "https://quote.alltick.co/quote-b-api/kline",
+  "ALLTICK_TICK_URL": "https://quote.alltick.co/quote-b-api/trade-tick",
+  "OANDA_API_TOKEN": "",
+  "OANDA_ACCOUNT_ID": "",
+  "OANDA_ENVIRONMENT": "practice",
+  "TRADERMADE_API_KEY": "",
+  "FINNHUB_API_KEY": "",
+  "BALE_GH_ADMIN_TOKEN": ""
+}
