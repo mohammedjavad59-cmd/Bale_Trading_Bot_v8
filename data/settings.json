@@ -93,7 +93,7 @@
       "name": "Twelve Data",
       "env_key": "TWELVEDATA_API_KEY",
       "enabled": true,
-      "priority": 2
+      "priority": 3
     },
     "alltick": {
       "name": "AllTick",
@@ -111,7 +111,7 @@
       "name": "Finnhub",
       "env_key": "FINNHUB_API_KEY",
       "enabled": true,
-      "priority": 3
+      "priority": 2
     }
   }
 }
