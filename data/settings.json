@@ -59,7 +59,7 @@
     },
     "pro_btb": {
       "enabled": true,
-      "symbol": "XAU/USD",
+      "symbol": "US300/USD",
       "timeframe": "M15",
       "scan_interval": 120,
       "cooldown": 0,
