@@ -93,13 +93,13 @@
       "name": "Twelve Data",
       "env_key": "TWELVEDATA_API_KEY",
       "enabled": true,
-      "priority": 1
+      "priority": 2
     },
     "alltick": {
       "name": "AllTick",
       "env_key": "ALLTICK_API_TOKEN",
       "enabled": true,
-      "priority": 2
+      "priority": 1
     },
     "tradermade": {
       "name": "TraderMade",
