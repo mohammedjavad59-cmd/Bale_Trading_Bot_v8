@@ -4,7 +4,8 @@
     "allowed_chat_ids": [
       "659735670"
     ],
-    "admin_chat_ids": []
+    "admin_chat_ids": [],
+    "owner_chat_id": "659735670"
   },
   "strategies": {
     "ny_orb": {
@@ -79,7 +80,7 @@
     "tradermade": {
       "name": "TraderMade",
       "env_key": "TRADERMADE_API_KEY",
-      "enabled": true,
+      "enabled": false,
       "priority": 4
     },
     "finnhub": {
