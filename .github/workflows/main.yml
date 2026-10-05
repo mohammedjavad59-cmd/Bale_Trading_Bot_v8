@@ -1,0 +1,52 @@
+name: Trading Bot 24x7
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+concurrency:
+  group: trading-bot-runtime
+  cancel-in-progress: true
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run trading bot
+        env:
+          BALE_TOKEN: ${{ secrets.BALE_TOKEN }}
+          BALE_CHAT_ID: ${{ secrets.BALE_CHAT_ID }}
+          OWNER_CHAT_ID: ${{ secrets.OWNER_CHAT_ID }}
+          TWELVEDATA_API_KEY: ${{ secrets.TWELVEDATA_API_KEY }}
+          ALLTICK_API_TOKEN: ${{ secrets.ALLTICK_API_TOKEN }}
+          OANDA_API_TOKEN: ${{ secrets.OANDA_API_TOKEN }}
+          OANDA_ACCOUNT_ID: ${{ secrets.OANDA_ACCOUNT_ID }}
+          OANDA_ENVIRONMENT: ${{ secrets.OANDA_ENVIRONMENT }}
+          TRADERMADE_API_KEY: ${{ secrets.TRADERMADE_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          BALE_GH_ADMIN_TOKEN: ${{ secrets.BALE_GH_ADMIN_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          echo "Starting trading bot..."
+          set +e
+          timeout --signal=TERM --kill-after=30s 330m python main.py
+          code=$?
+          if [ "$code" -eq 124 ]; then
+            echo "Bot reached planned rotation time; exiting cleanly."
+            exit 0
+          fi
+          exit "$code"
