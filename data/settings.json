@@ -49,7 +49,7 @@
       "use_second_entry_2x": true
     },
     "test": {
-      "enabled": true,
+      "enabled": false,
       "symbol": "XAU/USD",
       "timeframe": "M1",
       "scan_interval": 10,
