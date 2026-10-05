@@ -63,7 +63,7 @@
       "name": "OANDA",
       "env_key": "OANDA_API_TOKEN",
       "enabled": false,
-      "priority": 2
+      "priority": 3
     },
     "twelvedata": {
       "name": "Twelve Data",
@@ -75,7 +75,7 @@
       "name": "AllTick",
       "env_key": "ALLTICK_API_TOKEN",
       "enabled": true,
-      "priority": 3
+      "priority": 2
     },
     "tradermade": {
       "name": "TraderMade",
