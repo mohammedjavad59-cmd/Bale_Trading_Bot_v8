@@ -63,13 +63,13 @@
       "name": "OANDA",
       "env_key": "OANDA_API_TOKEN",
       "enabled": false,
-      "priority": 1
+      "priority": 2
     },
     "twelvedata": {
       "name": "Twelve Data",
       "env_key": "TWELVEDATA_API_KEY",
       "enabled": true,
-      "priority": 2
+      "priority": 1
     },
     "alltick": {
       "name": "AllTick",
