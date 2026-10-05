@@ -18,7 +18,7 @@
       "timeframe": "M5"
     },
     "vwap_wick_rejection": {
-      "enabled": true,
+      "enabled": false,
       "scan_interval": 20,
       "cooldown": 0,
       "max_signals_per_day": null,
