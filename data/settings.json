@@ -86,7 +86,7 @@
     "finnhub": {
       "name": "Finnhub",
       "env_key": "FINNHUB_API_KEY",
-      "enabled": true,
+      "enabled": false,
       "priority": 5
     }
   }
