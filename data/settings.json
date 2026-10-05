@@ -61,7 +61,7 @@
       "enabled": true,
       "symbol": "XAU/USD",
       "timeframe": "M15",
-      "scan_interval": 10,
+      "scan_interval": 120,
       "cooldown": 0,
       "max_signals_per_day": null,
       "one_signal_per_candle": true,
