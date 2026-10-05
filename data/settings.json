@@ -60,7 +60,7 @@
     "pro_btb": {
       "enabled": true,
       "symbol": "XAU/USD",
-      "timeframe": "M5",
+      "timeframe": "M15",
       "scan_interval": 10,
       "cooldown": 0,
       "max_signals_per_day": null,
