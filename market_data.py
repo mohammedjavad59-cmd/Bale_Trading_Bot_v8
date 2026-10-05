@@ -105,8 +105,17 @@ class MarketDataCache:
     def _set_success(self,p):
         st=self.provider_state[p]; st["status"]="healthy"; st["last_success"]=datetime.now(timezone.utc).isoformat(); st["last_error"]=None; st["requests"]+=1
 
+    @staticmethod
+    def _sanitize_error(exc):
+        text=str(exc)
+        # Never allow API credentials to leak through provider errors/logs.
+        import re
+        text=re.sub(r"([?&](?:token|apikey|api_key|key)=)[^&\s]+", r"\1[REDACTED]", text, flags=re.I)
+        text=re.sub(r"(Bearer\s+)[^\s]+", r"\1[REDACTED]", text, flags=re.I)
+        return text
+
     def _set_error(self,p,e,rate=False):
-        st=self.provider_state[p]; st["status"]="rate_limited" if rate else "error"; st["last_error"]=str(e); st["errors"]+=1; st["requests"]+=1
+        st=self.provider_state[p]; st["status"]="rate_limited" if rate else "error"; st["last_error"]=self._sanitize_error(e); st["errors"]+=1; st["requests"]+=1
         if rate: st["rate_limits"]+=1
 
     def _request(self, provider, method, url, **kwargs):
@@ -119,7 +128,20 @@ class MarketDataCache:
             self.cooldowns[provider]=time.monotonic()+min(retry,600)+random.uniform(0,3)
             self._set_error(provider,f"HTTP 429; cooldown={retry}s",True)
             raise MarketDataRateLimit(f"{provider}: HTTP 429")
-        r.raise_for_status(); return r
+        if r.status_code in (401,403,404):
+            # Auth/permission/unsupported-endpoint failures should trigger failover,
+            # but the provider should not be hammered again on every scan.
+            cooldown={401:900,403:1800,404:1800}[r.status_code]
+            self.cooldowns[provider]=time.monotonic()+cooldown+random.uniform(0,5)
+            msg=f"HTTP {r.status_code}; provider temporarily skipped for {cooldown}s"
+            self._set_error(provider,msg,False)
+            raise MarketDataUnavailable(f"{provider}: HTTP {r.status_code}")
+        try:
+            r.raise_for_status()
+        except Exception as exc:
+            safe=self._sanitize_error(exc)
+            raise MarketDataUnavailable(safe) from exc
+        return r
 
     def _normalize(self, values, timezone_name):
         out=[]
@@ -198,11 +220,19 @@ class MarketDataCache:
         return self._normalize(vals,timezone_name)
 
     def _finnhub(self,symbol,outputsize,timeframe,timezone_name):
+        # Finnhub's endpoint used here is specifically /forex/candle. Do not send
+        # index/CFD-style symbols such as US300/USD to it as fake FX pairs.
+        canonical=self._canonical(symbol)
+        base,quote=self._pair(canonical)
+        if len(base)!=3 or len(quote)!=3:
+            raise MarketDataUnavailable(f"Finnhub skipped: {canonical} is not an FX-style symbol")
         key=self._secret("finnhub")
         if not key: raise MarketDataUnavailable("FINNHUB_API_KEY تنظیم نشده است")
         resolution={"M1":"1","M5":"5","M15":"15","M30":"30","H1":"60","D1":"D"}.get(str(timeframe).upper(),"1")
         end=int(time.time()); span=max(3600,int(outputsize)*int(resolution)*60) if resolution.isdigit() else 86400*max(2,int(outputsize))
-        r=self._request("finnhub","GET","https://finnhub.io/api/v1/forex/candle",params={"symbol":self._mapped_symbol("finnhub",symbol),"resolution":resolution,"from":end-span,"to":end,"token":key})
+        # Put the secret in a header instead of the query string so HTTP errors
+        # cannot accidentally expose it through the request URL.
+        r=self._request("finnhub","GET","https://finnhub.io/api/v1/forex/candle",headers={"X-Finnhub-Token":key},params={"symbol":self._mapped_symbol("finnhub",canonical),"resolution":resolution,"from":end-span,"to":end})
         d=r.json()
         if d.get("s") not in ("ok",None): raise MarketDataUnavailable(f"Finnhub: {d.get('s')}")
         vals=[]
