@@ -63,7 +63,7 @@
       "name": "OANDA",
       "env_key": "OANDA_API_TOKEN",
       "enabled": false,
-      "priority": 3
+      "priority": 4
     },
     "twelvedata": {
       "name": "Twelve Data",
@@ -87,7 +87,7 @@
       "name": "Finnhub",
       "env_key": "FINNHUB_API_KEY",
       "enabled": true,
-      "priority": 4
+      "priority": 3
     }
   }
 }
