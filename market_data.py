@@ -12,6 +12,11 @@ class MarketDataUnavailable(Exception):
     pass
 
 
+class MarketDataSymbolUnsupported(MarketDataUnavailable):
+    """Symbol is not supported by the selected provider/endpoint."""
+    pass
+
+
 class MarketDataCache:
     """Central market-data manager.
 
@@ -75,8 +80,12 @@ class MarketDataCache:
 
     @staticmethod
     def _pair(symbol):
-        s=MarketDataCache._canonical(symbol).replace("/","")
-        return s[:3],s[3:]
+        s=MarketDataCache._canonical(symbol)
+        if "/" in s:
+            base, quote = s.split("/", 1)
+            return base, quote
+        compact=s.replace("/","")
+        return compact[:3],compact[3:]
 
     def _mapped_symbol(self, provider, symbol):
         s=self._canonical(symbol)
@@ -173,6 +182,9 @@ class MarketDataCache:
         return out
 
     def _oanda(self,symbol,outputsize,timeframe,timezone_name):
+        base,quote=self._pair(symbol)
+        if len(base)!=3 or len(quote)!=3:
+            raise MarketDataSymbolUnsupported(f"OANDA skipped: {self._canonical(symbol)} is not an FX-style symbol")
         token=self._secret("oanda")
         if not token: raise MarketDataUnavailable("OANDA_API_TOKEN تنظیم نشده است")
         env=str(self.cfg.get("OANDA_ENVIRONMENT") or os.getenv("OANDA_ENVIRONMENT") or "practice").lower()
@@ -208,9 +220,12 @@ class MarketDataCache:
         return self._normalize(vals,timezone_name)
 
     def _tradermade(self,symbol,outputsize,timeframe,timezone_name):
+        base,quote=self._pair(symbol)
+        if len(base)!=3 or len(quote)!=3:
+            raise MarketDataSymbolUnsupported(f"TraderMade skipped: {self._canonical(symbol)} is not an FX-style symbol")
         key=self._secret("tradermade")
         if not key: raise MarketDataUnavailable("TRADERMADE_API_KEY تنظیم نشده است")
-        base,quote=self._pair(symbol); interval={"M1":"minute","M5":"minute","M15":"minute","M30":"minute","H1":"hour"}.get(str(timeframe).upper(),"minute")
+        interval={"M1":"minute","M5":"minute","M15":"minute","M30":"minute","H1":"hour"}.get(str(timeframe).upper(),"minute")
         # TraderMade's timeseries endpoint accepts start/end; request a bounded recent window.
         minutes=max(60,int(outputsize)*({"M1":1,"M5":5,"M15":15,"M30":30,"H1":60}.get(str(timeframe).upper(),1)))
         end=datetime.now(timezone.utc); start=end-timedelta(minutes=minutes+10)
@@ -275,8 +290,9 @@ class MarketDataCache:
                     with self.lock: self.bars_cache[key]=(time.monotonic(),values); self._set_success(p)
                     return values[-need:]
                 except Exception as e:
-                    errors.append(f"{p}: {e}")
-                    if not isinstance(e,MarketDataRateLimit): self._set_error(p,e)
+                    errors.append(f"{p}: {self._sanitize_error(e)}")
+                    if not isinstance(e,(MarketDataRateLimit,MarketDataSymbolUnsupported)):
+                        self._set_error(p,e)
             raise MarketDataUnavailable(" | ".join(errors) if errors else "هیچ Provider فعالی برای داده وجود ندارد")
         finally:
             with self.lock:
@@ -298,7 +314,8 @@ class MarketDataCache:
                 vals=self._fetch(p,symbol,3,"M1","UTC")
                 c=float(vals[-1]["close"]); val=(c,c); self._set_success(p); self.quote_cache[symbol]=(now,val); return val
             except Exception as e:
-                if not isinstance(e,MarketDataRateLimit): self._set_error(p,e)
+                if not isinstance(e,(MarketDataRateLimit,MarketDataSymbolUnsupported)):
+                    self._set_error(p,e)
         return None
 
     def diagnostics(self):
