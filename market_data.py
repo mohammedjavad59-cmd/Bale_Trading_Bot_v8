@@ -109,7 +109,22 @@ class MarketDataCache:
         return {"M1":55,"M5":240,"M15":720,"M30":1400,"H1":3000}.get(tf,3000)
 
     def _fresh(self, item, timeframe):
-        return item and time.monotonic()-item[0] < self._ttl(timeframe) and item[1]
+        # Validate both cache age and the real timestamp of the newest candle.
+        if not item or not item[1]:
+            return False
+        if time.monotonic()-item[0] >= self._ttl(timeframe):
+            return False
+        try:
+            raw=item[1][-1].get("datetime_utc") or item[1][-1].get("datetime")
+            if raw:
+                dt=datetime.fromisoformat(str(raw).replace("Z","+00:00"))
+                if dt.tzinfo is None: dt=dt.replace(tzinfo=timezone.utc)
+                age=(datetime.now(timezone.utc)-dt.astimezone(timezone.utc)).total_seconds()
+                max_age={"M1":180,"M5":600,"M15":1800,"M30":2700,"H1":5400}.get(str(timeframe).upper(),7200)
+                if age > max_age: return False
+        except Exception:
+            return False
+        return True
 
     def _set_success(self,p):
         st=self.provider_state[p]; st["status"]="healthy"; st["last_success"]=datetime.now(timezone.utc).isoformat(); st["last_error"]=None; st["requests"]+=1
@@ -286,14 +301,29 @@ class MarketDataCache:
                 try:
                     values=self._fetch(p,symbol,max(need,300 if tf in ("M5","M15") else 500),tf,timezone_name)
                     if not values: raise MarketDataUnavailable("empty data")
-                    # Ignore obviously stale latest candle; keep data but expose diagnostics.
-                    with self.lock: self.bars_cache[key]=(time.monotonic(),values); self._set_success(p)
+                    # Reject provider responses whose newest candle is too old.
+                    probe=(time.monotonic(),values)
+                    if not self._fresh(probe,tf):
+                        raise MarketDataUnavailable(f"{p}: stale market data")
+                    with self.lock:
+                        self.bars_cache[key]=probe
+                        self._set_success(p)
                     return values[-need:]
                 except Exception as e:
                     errors.append(f"{p}: {self._sanitize_error(e)}")
                     if not isinstance(e,(MarketDataRateLimit,MarketDataSymbolUnsupported)):
                         self._set_error(p,e)
-            raise MarketDataUnavailable(" | ".join(errors) if errors else "هیچ Provider فعالی برای داده وجود ندارد")
+            if errors:
+                raise MarketDataUnavailable(" | ".join(self._sanitize_error(x) for x in errors))
+            states=[]
+            now_m=time.monotonic()
+            for pk,pcfg in self.provider_items():
+                if not pcfg.get("enabled",True):
+                    states.append(f"{pk}:disabled")
+                    continue
+                remaining=max(0,int(self.cooldowns.get(pk,0)-now_m))
+                states.append(f"{pk}:cooldown={remaining}s" if remaining else f"{pk}:unavailable")
+            raise MarketDataUnavailable("هیچ Provider فعالی برای داده وجود ندارد؛ " + ", ".join(states))
         finally:
             with self.lock:
                 ev=self.inflight.pop(key,None)
