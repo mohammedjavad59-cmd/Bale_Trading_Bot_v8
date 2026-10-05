@@ -59,7 +59,7 @@
     },
     "pro_btb": {
       "enabled": true,
-      "symbol": "US300/USD",
+      "symbol": "GBP/USD",
       "timeframe": "M15",
       "scan_interval": 120,
       "cooldown": 0,
