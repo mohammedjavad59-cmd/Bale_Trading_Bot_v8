@@ -27,7 +27,7 @@
       "timeframe": "M1"
     },
     "sp2l": {
-      "enabled": true,
+      "enabled": false,
       "symbol": "XAU/USD",
       "timeframe": "M5",
       "scan_interval": 20,
