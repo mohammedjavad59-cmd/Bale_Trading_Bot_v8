@@ -16,7 +16,7 @@ conservative, configurable price-action interpretation:
   for bearish setups the mirrored close-to-low zone is used;
 - retest means price returns to the broken level/entry zone;
 - all signals use completed candles only;
-- default target is at least 1:2 RR.
+- default target is 1:1 RR.
 
 The implementation is intentionally configurable so the bot can be tuned
 without changing this file if later source material provides more exact
@@ -48,7 +48,7 @@ STRATEGY_SECTIONS = [
     ]),
     ("🛡 مدیریت معامله", [
         "حد ضرر در سمت مخالف ساختار برگشت/Break قرار می‌گیرد.",
-        "حد سود با نسبت ریسک به ریوارد حداقل 1:2 محاسبه می‌شود.",
+        "حد سود با نسبت ریسک به ریوارد 1:1 محاسبه می‌شود.",
         "فقط کندل‌های کاملاً بسته‌شده برای تشخیص سیگنال استفاده می‌شوند.",
     ]),
     ("📈 شرایط مناسب", [
@@ -79,8 +79,8 @@ DEFAULT_SETTINGS = {
     "confirmation_min_body_ratio": 0.45,
     "sl_mode": "RETEST_EXTREME",
     "sl_buffer_points": 0,
-    "min_rr": 2.0,
-    "tp_r": 2.0,
+    "min_rr": 1.0,
+    "tp_r": 1.0,
 }
 
 
@@ -372,7 +372,7 @@ class ProBTBStrategy:
         if risk <= 0:
             return None, "🟡 ریسک معامله صفر است"
 
-        min_rr = max(2.0, float(s.get("min_rr", 2.0) or 2.0))
+        min_rr = max(1.0, float(s.get("min_rr", 1.0) or 1.0))
         rr = max(min_rr, float(s.get("tp_r", min_rr) or min_rr))
         tp = entry + risk * rr if direction == 1 else entry - risk * rr
 
